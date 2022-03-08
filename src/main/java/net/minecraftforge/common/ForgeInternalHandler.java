@@ -14,6 +14,7 @@ import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.loot.LootModifierManager;
 import net.minecraftforge.common.util.FakePlayerFactory;
+import net.minecraftforge.common.world.biome.ForgeBiomeAdaptationManager;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -118,6 +119,7 @@ public class ForgeInternalHandler
     {
         INSTANCE = new LootModifierManager();
         event.addListener(INSTANCE);
+        event.addListener(ForgeBiomeAdaptationManager.INSTANCE);
     }
 
     static LootModifierManager getLootModifierManager()

@@ -1,0 +1,32 @@
+--- a/net/minecraft/world/level/levelgen/GenerationStep.java
++++ b/net/minecraft/world/level/levelgen/GenerationStep.java
+@@ -36,7 +_,7 @@
+       }
+    }
+ 
+-   public static enum Decoration {
++   public static enum Decoration implements StringRepresentable {
+       RAW_GENERATION,
+       LAKES,
+       LOCAL_MODIFICATIONS,
+@@ -48,5 +_,20 @@
+       FLUID_SPRINGS,
+       VEGETAL_DECORATION,
+       TOP_LAYER_MODIFICATION;
++
++      public static final Codec<GenerationStep.Decoration> CODEC = StringRepresentable.m_14350_(GenerationStep.Decoration::values, GenerationStep.Decoration::byName);
++      private static final Map<String, GenerationStep.Decoration> BY_NAME = Arrays.stream(values()).collect(Collectors.toMap(GenerationStep.Decoration::toString, (p_64205_) -> {
++         return p_64205_;
++      }));
++
++      @Override
++      public String m_7912_() {
++         return this.name().toUpperCase();
++      }
++
++      @Nullable
++      public static GenerationStep.Decoration byName(String p_64207_) {
++         return BY_NAME.get(p_64207_);
++      }
+    }
+ }

@@ -1,14 +1,25 @@
 --- a/net/minecraft/world/level/biome/BiomeGenerationSettings.java
 +++ b/net/minecraft/world/level/biome/BiomeGenerationSettings.java
-@@ -38,6 +_,7 @@
+@@ -32,15 +_,16 @@
+    public static final BiomeGenerationSettings f_47777_ = new BiomeGenerationSettings(ImmutableMap.of(), ImmutableList.of());
+    public static final MapCodec<BiomeGenerationSettings> f_47778_ = RecordCodecBuilder.mapCodec((p_186655_) -> {
+       return p_186655_.group(Codec.simpleMap(GenerationStep.Carving.f_64194_, ConfiguredWorldCarver.f_64848_.promotePartial(Util.m_137489_("Carver: ", f_47776_::error)), StringRepresentable.m_14357_(GenerationStep.Carving.values())).fieldOf("carvers").forGetter((p_186661_) -> {
+-         return p_186661_.f_47780_;
++         return p_186661_.getActiveCarvers();
+       }), PlacedFeature.f_204922_.promotePartial(Util.m_137489_("Features: ", f_47776_::error)).fieldOf("features").forGetter((p_186653_) -> {
+-         return p_186653_.f_47781_;
++         return p_186653_.getActiveFeatures();
        })).apply(p_186655_, BiomeGenerationSettings::new);
     });
-    private final Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> f_47780_;
+    protected final Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> f_47780_;
+    protected final List<HolderSet<PlacedFeature>> f_47781_;
+    protected final Supplier<List<ConfiguredFeature<?, ?>>> f_47783_;
+    protected final Supplier<Set<PlacedFeature>> f_186648_;
 +   private final java.util.Set<GenerationStep.Carving> carversView;
-    private final List<HolderSet<PlacedFeature>> f_47781_;
-    private final Supplier<List<ConfiguredFeature<?, ?>>> f_47783_;
-    private final Supplier<Set<PlacedFeature>> f_186648_;
-@@ -53,10 +_,15 @@
+ 
+    protected BiomeGenerationSettings(Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> p_186650_, List<HolderSet<PlacedFeature>> p_186651_) {
+       this.f_47780_ = p_186650_;
+@@ -53,22 +_,47 @@
        this.f_186648_ = Suppliers.memoize(() -> {
           return p_186651_.stream().flatMap(HolderSet::m_203614_).map(Holder::m_203334_).collect(Collectors.toSet());
        });
@@ -16,11 +27,47 @@
     }
  
     public Iterable<Holder<ConfiguredWorldCarver<?>>> m_204187_(GenerationStep.Carving p_204188_) {
-       return Objects.requireNonNullElseGet(this.f_47780_.get(p_204188_), List::of);
+-      return Objects.requireNonNullElseGet(this.f_47780_.get(p_204188_), List::of);
++      return Objects.requireNonNullElseGet(this.getActiveCarvers().get(p_204188_), List::of);
 +   }
 +
 +   public java.util.Set<GenerationStep.Carving> getCarvingStages() {
-+       return this.carversView;
++       return this.getActiveCarversView();
     }
  
     public List<ConfiguredFeature<?, ?>> m_47815_() {
+-      return this.f_47783_.get();
++      return this.getActiveFlowerFeatures().get();
+    }
+ 
+    public List<HolderSet<PlacedFeature>> m_47818_() {
+-      return this.f_47781_;
++      return this.getActiveFeatures();
+    }
+ 
+    public boolean m_186658_(PlacedFeature p_186659_) {
+-      return this.f_186648_.get().contains(p_186659_);
++      return this.getActiveFeatureSet().get().contains(p_186659_);
++   }
++
++   public Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> getActiveCarvers() {
++      return f_47780_;
++   }
++
++   public List<HolderSet<PlacedFeature>> getActiveFeatures() {
++      return f_47781_;
++   }
++
++   public Supplier<List<ConfiguredFeature<?, ?>>> getActiveFlowerFeatures() {
++      return f_47783_;
++   }
++
++   public Supplier<Set<PlacedFeature>> getActiveFeatureSet() {
++      return f_186648_;
++   }
++
++   public java.util.Set<GenerationStep.Carving> getActiveCarversView() {
++      return carversView;
+    }
+ 
+    public static class Builder {

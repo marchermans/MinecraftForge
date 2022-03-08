@@ -34,6 +34,29 @@ public interface Lazy<T> extends Supplier<T>
     }
 
     /**
+     * Constructs a thread-safe resettable lazy-initialized object
+     * @param supplier The supplier for the value, to be called the first time the value is needed, or after every reset.
+     */
+    static <T> Resettable<T> resettableOf(@Nonnull Supplier<T> supplier) {
+        return new ConcurrentResettable<>(supplier);
+    }
+
+    /**
+     * Marks the lazy as a resettable variant.
+     * Resettable lazies are proxy objects which can clear their stored value and will then initialize the value on
+     * the next call to {@link #get()}.
+     *
+     * @param <T> The type that is proxied.
+     */
+    interface Resettable<T> extends Lazy<T> {
+
+        /**
+         * Resets the lazy so that it can re-initialized.
+         */
+        void reset();
+    }
+
+    /**
      * Non-thread-safe implementation.
      */
     final class Fast<T> implements Lazy<T>
@@ -62,10 +85,10 @@ public interface Lazy<T> extends Supplier<T>
     /**
      * Thread-safe implementation.
      */
-    final class Concurrent<T> implements Lazy<T>
+    class Concurrent<T> implements Lazy<T>
     {
-        private volatile Object lock = new Object();
-        private volatile Supplier<T> supplier;
+        protected volatile Object lock = new Object();
+        protected volatile Supplier<T> supplier;
         private volatile T instance;
 
         private Concurrent(Supplier<T> supplier)
@@ -95,6 +118,26 @@ public interface Lazy<T> extends Supplier<T>
                 }
             }
             return instance;
+        }
+    }
+
+    /**
+     * Resettable thread safe implementation
+     */
+    class ConcurrentResettable<T> extends Concurrent<T> implements Resettable<T> {
+
+        private final Supplier<T> initializer;
+
+        private ConcurrentResettable(Supplier<T> supplier) {
+            super(supplier);
+            initializer = supplier;
+        }
+
+        @Override
+        public void reset() {
+            //lock needs to be done first, so that when get is called concurrently it is set after the supplier is not null check.
+            this.lock = new Object();
+            this.supplier = initializer;
         }
     }
 }

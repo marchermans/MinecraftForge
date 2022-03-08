@@ -9,8 +9,12 @@
     public static final Codec<Biome> f_47429_ = RecordCodecBuilder.create((p_186636_) -> {
        return p_186636_.group(Biome.ClimateSettings.f_47679_.forGetter((p_151717_) -> {
           return p_151717_.f_47437_;
-@@ -46,7 +_,9 @@
-          return p_186642_.f_47438_;
+@@ -43,10 +_,12 @@
+       }), BiomeSpecialEffects.f_47926_.fieldOf("effects").forGetter((p_186644_) -> {
+          return p_186644_.f_47443_;
+       }), BiomeGenerationSettings.f_47778_.forGetter((p_186642_) -> {
+-         return p_186642_.f_47438_;
++         return p_186642_.serializedGenerationSettings;
        }), MobSpawnSettings.f_48327_.forGetter((p_186640_) -> {
           return p_186640_.f_47439_;
 -      })).apply(p_186636_, Biome::new);
@@ -20,3 +24,20 @@
     });
     public static final Codec<Biome> f_47430_ = RecordCodecBuilder.create((p_186632_) -> {
        return p_186632_.group(Biome.ClimateSettings.f_47679_.forGetter((p_186638_) -> {
+@@ -84,13 +_,15 @@
+          return long2floatlinkedopenhashmap;
+       });
+    });
++   private final BiomeGenerationSettings serializedGenerationSettings;
+ 
+    Biome(Biome.ClimateSettings p_186620_, Biome.BiomeCategory p_186621_, BiomeSpecialEffects p_186622_, BiomeGenerationSettings p_186623_, MobSpawnSettings p_186624_) {
+       this.f_47437_ = p_186620_;
+-      this.f_47438_ = p_186623_;
++      this.f_47438_ = new net.minecraftforge.common.world.ForgeBiomeGenerationSettings(p_186623_, this);
+       this.f_47439_ = p_186624_;
+       this.f_47442_ = p_186621_;
+       this.f_47443_ = p_186622_;
++      this.serializedGenerationSettings = p_186623_;
+    }
+ 
+    public int m_47463_() {
