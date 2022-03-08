@@ -1079,8 +1079,8 @@ public class ForgeHooks
         return res == Result.DEFAULT ? 0 : res == Result.DENY ? -1 : 1;
     }
 
-    public static <T> void deserializeTagAdditions(List<Tag.Entry> list, JsonObject json, List<Tag.BuilderEntry> allList)
-    {
+
+    public static void deserializeTagAdditions(Tag.Builder builder, JsonObject json, String source) {
         if (json.has("remove"))
         {
             for (JsonElement entry : GsonHelper.getAsJsonArray(json, "remove"))
@@ -1091,7 +1091,8 @@ public class ForgeHooks
                     dummy = new Tag.OptionalElementEntry(new ResourceLocation(s));
                 else
                     dummy = new Tag.TagEntry(new ResourceLocation(s.substring(1)));
-                allList.removeIf(e -> e.entry().equals(dummy));
+
+                builder.remove(dummy, source);
             }
         }
     }

@@ -18,7 +18,7 @@
  
        public static Tag.Builder m_13304_() {
           return new Tag.Builder();
-@@ -63,6 +_,15 @@
+@@ -63,12 +_,28 @@
           return this.m_13307_(new Tag.OptionalTagEntry(p_144383_), p_144384_);
        }
  
@@ -32,13 +32,42 @@
 +      }
 +
        public <T> Either<Collection<Tag.BuilderEntry>, Tag<T>> m_144371_(Function<ResourceLocation, Tag<T>> p_144372_, Function<ResourceLocation, T> p_144373_) {
++         ImmutableSet.Builder<T> removeBuilder = ImmutableSet.builder();
           ImmutableSet.Builder<T> builder = ImmutableSet.builder();
           List<Tag.BuilderEntry> list = new ArrayList<>();
+ 
++         for (Tag.BuilderEntry removeEntries : this.removeEntries) {
++            removeEntries.f_13338_().m_7657_(p_144372_, p_144373_, removeBuilder::add);
++         }
++
++         final java.util.Set<T> exclusionSet = removeBuilder.build();
++
+          for(Tag.BuilderEntry tag$builderentry : this.f_13302_) {
+-            if (!tag$builderentry.f_13338_().m_7657_(p_144372_, p_144373_, builder::add)) {
++            if (!tag$builderentry.f_13338_().m_7657_(p_144372_, p_144373_, t -> { if (!exclusionSet.contains(t)) builder.add(t); })) {
+                list.add(tag$builderentry);
+             }
+          }
+@@ -84,12 +_,14 @@
+          this.f_13302_.forEach((p_144378_) -> {
+             p_144378_.f_13338_.m_141929_(p_144367_);
+          });
++         this.removeEntries.forEach(builderEntry -> builderEntry.f_13338_().m_141929_(p_144367_));
+       }
+ 
+       public void m_144374_(Consumer<ResourceLocation> p_144375_) {
+          this.f_13302_.forEach((p_144370_) -> {
+             p_144370_.f_13338_.m_141918_(p_144375_);
+          });
++         this.removeEntries.forEach(builderEntry -> builderEntry.f_13338_().m_141918_(p_144375_));
+       }
+ 
+       public Tag.Builder m_13312_(JsonObject p_13313_, String p_13314_) {
 @@ -104,6 +_,7 @@
              this.f_13302_.clear();
           }
  
-+         net.minecraftforge.common.ForgeHooks.deserializeTagAdditions(list, p_13313_, f_13302_);
++         net.minecraftforge.common.ForgeHooks.deserializeTagAdditions(this, p_13313_, p_13314_);
           list.forEach((p_13319_) -> {
              this.f_13302_.add(new Tag.BuilderEntry(p_13319_, p_13314_));
           });
