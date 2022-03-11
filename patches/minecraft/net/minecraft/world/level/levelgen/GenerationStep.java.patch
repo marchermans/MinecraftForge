@@ -15,7 +15,7 @@
        TOP_LAYER_MODIFICATION;
 +
 +      public static final Codec<GenerationStep.Decoration> CODEC = StringRepresentable.m_14350_(GenerationStep.Decoration::values, GenerationStep.Decoration::byName);
-+      private static final Map<String, GenerationStep.Decoration> BY_NAME = Arrays.stream(values()).collect(Collectors.toMap(GenerationStep.Decoration::toString, (p_64205_) -> {
++      private static final Map<String, GenerationStep.Decoration> BY_NAME = Arrays.stream(values()).collect(Collectors.toMap(GenerationStep.Decoration::m_7912_, (p_64205_) -> {
 +         return p_64205_;
 +      }));
 +

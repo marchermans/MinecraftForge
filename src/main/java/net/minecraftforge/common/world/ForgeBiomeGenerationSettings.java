@@ -3,6 +3,7 @@ package net.minecraftforge.common.world;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.levelgen.GenerationStep;
@@ -23,16 +24,15 @@ public class ForgeBiomeGenerationSettings extends BiomeGenerationSettings {
     private Biome biome;
 
     private final Lazy.Resettable<Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>>> adaptedCarvers = Lazy.resettableOf(
-            () -> ForgeBiomeAdaptationManager.INSTANCE.getCarvers().get(Holder.direct(biome))
+            () -> ForgeBiomeAdaptationManager.INSTANCE.getCarvers().get(biome.getHolder())
     );
     private final Lazy.Resettable<List<HolderSet<PlacedFeature>>> adaptedFeatures = Lazy.resettableOf(
-            () -> ForgeBiomeAdaptationManager.INSTANCE.getFeatures().get(Holder.direct(biome))
+            () -> ForgeBiomeAdaptationManager.INSTANCE.getFeatures().get(biome.getHolder())
     );
 
     private final Lazy.Resettable<Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>>> carversProxy = Lazy.resettableOf(
             () -> {
-                final Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> result = super.getActiveCarvers();
-                result.putAll(super.getActiveCarvers());
+                final Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> result = new HashMap<>(super.getActiveCarvers());
                 adaptedCarvers.get().forEach((carving, holders) -> result.merge(carving, holders, ForgeCombiningHolderSet::combine));
                 return result;
             }

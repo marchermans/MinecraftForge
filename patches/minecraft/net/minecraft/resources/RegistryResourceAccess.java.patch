@@ -8,6 +8,15 @@
                          optional = Optional.of(p_195896_.parse(p_195893_, jsonelement).map(RegistryResourceAccess.ParsedEntry::m_195956_));
                       } catch (Throwable throwable2) {
                          try {
+@@ -125,6 +_,8 @@
+          if (optional.isPresent()) {
+             f_195912_.error("Error adding element: {}", (Object)optional.get().message());
+          } else {
++            final JsonElement element = dataresult.result().get();
++            if (element instanceof com.google.gson.JsonObject jsonObject) jsonObject.addProperty("forge:registry_name", p_206838_.m_135782_().toString());
+             this.f_195913_.put(p_206838_, new RegistryResourceAccess.InMemoryStorage.Entry(dataresult.result().get(), p_206840_, p_206842_));
+          }
+ 
 @@ -138,6 +_,8 @@
  
        public <E> Optional<DataResult<RegistryResourceAccess.ParsedEntry<E>>> m_183313_(DynamicOps<JsonElement> p_195917_, ResourceKey<? extends Registry<E>> p_195918_, ResourceKey<E> p_195919_, Decoder<E> p_195920_) {

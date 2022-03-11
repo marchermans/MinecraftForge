@@ -28,22 +28,22 @@ public class ForgeBiomeAdaptationManager implements PreparableReloadListener {
 
     @Override
     public @NotNull CompletableFuture<Void> reload(
-            @NotNull PreparationBarrier preparationBarrier,
-            @NotNull ResourceManager resourceManager,
-            @NotNull ProfilerFiller onThreadProfiler,
-            @NotNull ProfilerFiller offThreadProfiler,
-            @NotNull Executor onThreadExecutor,
-            @NotNull Executor offThreadExecutor
+      final @NotNull PreparationBarrier stage,
+      final @NotNull ResourceManager resourceManager,
+      final @NotNull ProfilerFiller preparationsProfiler,
+      final @NotNull ProfilerFiller reloadProfiler,
+      final @NotNull Executor backgroundExecutor,
+      final @NotNull Executor gameExecutor
     ) {
         LOGGER.info("Reloading biome adaptions");
 
-        final CompletableFuture<List<CarverAdaption>> carverLoaders = ForgeBiomeAdaptationLoaders.loadCarvers(resourceManager, offThreadExecutor);
-        final CompletableFuture<List<FeatureAdaptation>> featureLoaders = ForgeBiomeAdaptationLoaders.loadFeatures(resourceManager, offThreadExecutor);
+        final CompletableFuture<List<CarverAdaption>> carverLoaders = ForgeBiomeAdaptationLoaders.loadCarvers(resourceManager, backgroundExecutor);
+        final CompletableFuture<List<FeatureAdaptation>> featureLoaders = ForgeBiomeAdaptationLoaders.loadFeatures(resourceManager, backgroundExecutor);
 
         return CompletableFuture.allOf(
                 carverLoaders.thenAccept(carverAdaptions -> setCarvers(ForgeBiomeAdaptations.carvers(carverAdaptions))),
                 featureLoaders.thenAccept(featureAdaptations -> setFeatures(ForgeBiomeAdaptations.features(featureAdaptations)))
-        ).thenCompose(preparationBarrier::wait);
+        ).thenCompose(stage::wait);
     }
 
     public ForgeBiomeAdaptation<Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>>, CarverAdaption> getCarvers() {

@@ -1,0 +1,35 @@
+{
+  "target": [
+    "minecraft:plains"
+  ],
+  "step": "UNDERGROUND_ORES",
+  "features": [
+    {
+      "feature": "minecraft:ore_gold",
+      "placement": [
+        {
+          "type":"count",
+          "count":150
+        },
+        {
+          "type": "in_square"
+        },
+        {
+          "type": "height_range",
+          "height": {
+            "type": "uniform",
+            "min_inclusive": {
+              "absolute": -60
+            },
+            "max_inclusive": {
+              "absolute": 200
+            }
+          }
+        },
+        {
+          "type": "biome"
+        }
+      ]
+    }
+  ]
+}
