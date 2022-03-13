@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 @Mod(BiomeAdaptationsTest.MOD_ID)
 public class BiomeAdaptationsTest
 {
-    static final String MOD_ID  = "biome_loading_event_test";
+    static final String MOD_ID  = "biome_adaptations_test";
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final boolean ENABLED = true;

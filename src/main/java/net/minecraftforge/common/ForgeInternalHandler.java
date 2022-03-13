@@ -119,7 +119,6 @@ public class ForgeInternalHandler
     {
         INSTANCE = new LootModifierManager();
         event.addListener(INSTANCE);
-        event.addListener(ForgeBiomeAdaptationManager.INSTANCE);
     }
 
     static LootModifierManager getLootModifierManager()

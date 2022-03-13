@@ -8,8 +8,12 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.world.biome.adaptions.CarverAdaption;
 import net.minecraftforge.common.world.biome.adaptions.FeatureAdaptation;
+import net.minecraftforge.event.async.OnWorldRegistriesLoadedEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -18,7 +22,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public class ForgeBiomeAdaptationManager implements PreparableReloadListener {
+public class ForgeBiomeAdaptationManager {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     public static final ForgeBiomeAdaptationManager INSTANCE = new ForgeBiomeAdaptationManager();
@@ -26,24 +30,17 @@ public class ForgeBiomeAdaptationManager implements PreparableReloadListener {
     private ForgeBiomeAdaptation<Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>>, CarverAdaption> carvers = ForgeBiomeAdaptations.carvers();
     private ForgeBiomeAdaptation<List<HolderSet<PlacedFeature>>, FeatureAdaptation> features = ForgeBiomeAdaptations.features();
 
-    @Override
-    public @NotNull CompletableFuture<Void> reload(
-      final @NotNull PreparationBarrier stage,
-      final @NotNull ResourceManager resourceManager,
-      final @NotNull ProfilerFiller preparationsProfiler,
-      final @NotNull ProfilerFiller reloadProfiler,
-      final @NotNull Executor backgroundExecutor,
-      final @NotNull Executor gameExecutor
-    ) {
+
+    @SubscribeEvent
+    public void reload(final OnWorldRegistriesLoadedEvent event)
+    {
         LOGGER.info("Reloading biome adaptions");
-
-        final CompletableFuture<List<CarverAdaption>> carverLoaders = ForgeBiomeAdaptationLoaders.loadCarvers(resourceManager, backgroundExecutor);
-        final CompletableFuture<List<FeatureAdaptation>> featureLoaders = ForgeBiomeAdaptationLoaders.loadFeatures(resourceManager, backgroundExecutor);
-
-        return CompletableFuture.allOf(
-                carverLoaders.thenAccept(carverAdaptions -> setCarvers(ForgeBiomeAdaptations.carvers(carverAdaptions))),
-                featureLoaders.thenAccept(featureAdaptations -> setFeatures(ForgeBiomeAdaptations.features(featureAdaptations)))
-        ).thenCompose(stage::wait);
+        event.withAsyncTask(configurator ->
+                configurator.async(() -> ForgeBiomeAdaptationLoaders.loadCarvers(event.getResourceManager(), event.getRegistryOps()))
+                        .sync(carvers -> setCarvers(ForgeBiomeAdaptations.carvers(carvers))));
+        event.withAsyncTask(configurator ->
+                configurator.async(() -> ForgeBiomeAdaptationLoaders.loadFeatures(event.getResourceManager(), event.getRegistryOps()))
+                        .sync(features -> setFeatures(ForgeBiomeAdaptations.features(features))));
     }
 
     public ForgeBiomeAdaptation<Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>>, CarverAdaption> getCarvers() {

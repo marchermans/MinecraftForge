@@ -1,12 +1,10 @@
-package net.minecraftforge.common;
+package net.minecraftforge.common.util.holder.set;
 
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraftforge.common.util.Lazy;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,10 +15,11 @@ import java.util.function.Supplier;
 
 public class ForgeCombiningHolderSet<T> extends HolderSet.ListBacked<T> {
 
-    public static <G> HolderSet<G> combine(HolderSet<G> holders, HolderSet<G> holders2) {
+    @SafeVarargs
+    public static <G> HolderSet<G> of(HolderSet<G> holders, HolderSet<G>... holders2) {
         final List<HolderSet<G>> holderSets = new ArrayList<>();
         holderSets.add(holders);
-        holderSets.add(holders2);
+        holderSets.addAll(List.of(holders2));
 
         return new ForgeCombiningHolderSet<G>(holderSets);
     }

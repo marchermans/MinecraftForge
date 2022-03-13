@@ -15,4 +15,11 @@ public interface IBiomeAdaptation {
      * @return The tag which defines which biomes to apply this adaptation to.
      */
     HolderSet<Biome> targetBiomes();
+
+    /**
+     * Defines the type of adaptation that is applied.
+     *
+     * @return The adaptation type.
+     */
+    AdaptationType adaptationType();
 }

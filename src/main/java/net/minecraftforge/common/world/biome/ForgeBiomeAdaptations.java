@@ -5,13 +5,12 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-import net.minecraftforge.common.ForgeCombiningHolderSet;
+import net.minecraftforge.common.util.holder.set.ForgeCombiningHolderSet;
+import net.minecraftforge.common.util.holder.set.ForgeEntryRemovingHolderSet;
 import net.minecraftforge.common.world.biome.adaptions.CarverAdaption;
 import net.minecraftforge.common.world.biome.adaptions.FeatureAdaptation;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 class ForgeBiomeAdaptations {
     public static ForgeBiomeAdaptation<Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>>, CarverAdaption> carvers() {
@@ -19,18 +18,21 @@ class ForgeBiomeAdaptations {
     }
 
     public static ForgeBiomeAdaptation<Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>>, CarverAdaption> carvers(List<CarverAdaption> carverAdaptions) {
-        return new ForgeBiomeAdaptation<>(adaptationsToConvert -> {
-            final Map<GenerationStep.Carving, List<HolderSet<ConfiguredWorldCarver<?>>>> resultingCarvers = Maps.newHashMap();
-
-            adaptationsToConvert.forEach(a -> {
-                resultingCarvers.computeIfAbsent(a.carvingStage(), (s) -> new ArrayList<>()).add(a.carvers());
-            });
-
-            final ImmutableMap.Builder<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> resultBuilder = ImmutableMap.builder();
-            resultingCarvers.forEach((carving, holders) -> resultBuilder.put(carving, new ForgeCombiningHolderSet<>(holders)));
-
-            return resultBuilder.build();
-        }, carverAdaptions);
+        return new ForgeBiomeAdaptation<>(
+                carverMap -> {
+                    final Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> result = new HashMap<>();
+                    carverMap.forEach((c, h) -> result.put(c, ForgeCombiningHolderSet.of(h)));
+                    return result;
+                },
+                (carverMap, toRemove) -> {
+                    carverMap.computeIfPresent(toRemove.carvingStage(), (step, current) -> ForgeEntryRemovingHolderSet.fromWithout(current, toRemove.carvers()));
+                },
+                (carverMap, toAdd) -> {
+                    carverMap.computeIfPresent(toAdd.carvingStage(), (step, current) -> ForgeCombiningHolderSet.of(current, toAdd.carvers()));
+                    carverMap.computeIfAbsent(toAdd.carvingStage(), (step) -> toAdd.carvers());
+                },
+                carverAdaptions
+        );
     }
 
     public static ForgeBiomeAdaptation<List<HolderSet<PlacedFeature>>, FeatureAdaptation> features() {
@@ -38,19 +40,34 @@ class ForgeBiomeAdaptations {
     }
 
     public static ForgeBiomeAdaptation<List<HolderSet<PlacedFeature>>, FeatureAdaptation> features(final List<FeatureAdaptation> featureAdaptations) {
-        return new ForgeBiomeAdaptation<>(adaptationsToConvert -> {
-            final Multimap<Integer, HolderSet<PlacedFeature>> featuresByStages = HashMultimap.create();
+        return new ForgeBiomeAdaptation<>(
+                featureSetList -> {
+                    final List<HolderSet<PlacedFeature>> result = new ArrayList<>();
+                    featureSetList.forEach(set -> result.add(ForgeCombiningHolderSet.of(set)));
+                    return result;
+                },
+                (featureSetList, toRemove) -> {
+                    if (featureSetList.size() <= toRemove.decorationStep().ordinal())
+                        return;
 
-            adaptationsToConvert.forEach(a -> featuresByStages.put(a.decorationStep().ordinal(), a.features()));
+                    featureSetList.set(toRemove.decorationStep().ordinal(), ForgeEntryRemovingHolderSet.fromWithout(
+                            featureSetList.get(toRemove.decorationStep().ordinal()),
+                            toRemove.features()
+                    ));
+                },
+                (featureSetList, toAdd) -> {
+                    if (featureSetList.size() <= toAdd.decorationStep().ordinal()) {
+                        for (int i = featureSetList.size(); i < toAdd.decorationStep().ordinal(); i++) {
+                            featureSetList.add(HolderSet.direct());
+                        }
+                    }
 
-            final int maxStep = featuresByStages.keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
-
-            final List<HolderSet<PlacedFeature>> result = new ArrayList<>();
-            for (int i = 0; i <= maxStep; i++) {
-                result.add(new ForgeCombiningHolderSet<>(featuresByStages.get(i)));
-            }
-
-            return result;
-        }, featureAdaptations);
+                    featureSetList.set(toAdd.decorationStep().ordinal(), ForgeCombiningHolderSet.of(
+                            featureSetList.get(toAdd.decorationStep().ordinal()),
+                            toAdd.features()
+                    ));
+                },
+                featureAdaptations
+        );
     }
 }
