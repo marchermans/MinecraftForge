@@ -11,10 +11,10 @@
 +         return p_186653_.getActiveFeatures();
        })).apply(p_186655_, BiomeGenerationSettings::new);
     });
-    protected final Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> f_47780_;
-    protected final List<HolderSet<PlacedFeature>> f_47781_;
-    protected final Supplier<List<ConfiguredFeature<?, ?>>> f_47783_;
-    protected final Supplier<Set<PlacedFeature>> f_186648_;
+    private final Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> f_47780_;
+    private final List<HolderSet<PlacedFeature>> f_47781_;
+    private final Supplier<List<ConfiguredFeature<?, ?>>> f_47783_;
+    private final Supplier<Set<PlacedFeature>> f_186648_;
 +   private final java.util.Set<GenerationStep.Carving> carversView;
  
     protected BiomeGenerationSettings(Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> p_186650_, List<HolderSet<PlacedFeature>> p_186651_) {

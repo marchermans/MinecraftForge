@@ -35,8 +35,9 @@
     Biome(Biome.ClimateSettings p_186620_, Biome.BiomeCategory p_186621_, BiomeSpecialEffects p_186622_, BiomeGenerationSettings p_186623_, MobSpawnSettings p_186624_) {
        this.f_47437_ = p_186620_;
 -      this.f_47438_ = p_186623_;
-+      this.f_47438_ = new net.minecraftforge.common.world.ForgeBiomeGenerationSettings(p_186623_, this);
-       this.f_47439_ = p_186624_;
+-      this.f_47439_ = p_186624_;
++      this.f_47438_ = new net.minecraftforge.common.world.biome.ForgeBiomeGenerationSettings(p_186623_, this);
++      this.f_47439_ = new net.minecraftforge.common.world.biome.ForgeMobSpawnSettings(p_186624_, this);
        this.f_47442_ = p_186621_;
        this.f_47443_ = p_186622_;
 +      this.serializedGenerationSettings = p_186623_;
@@ -45,8 +46,8 @@
 +
 +    Biome(Biome.ClimateSettings p_186620_, Biome.BiomeCategory p_186621_, BiomeSpecialEffects p_186622_, BiomeGenerationSettings p_186623_, MobSpawnSettings p_186624_, Optional<Holder<Biome>> holder) {
 +        this.f_47437_ = p_186620_;
-+        this.f_47438_ = new net.minecraftforge.common.world.ForgeBiomeGenerationSettings(p_186623_, this);
-+        this.f_47439_ = p_186624_;
++        this.f_47438_ = new net.minecraftforge.common.world.biome.ForgeBiomeGenerationSettings(p_186623_, this);
++        this.f_47439_ = new net.minecraftforge.common.world.biome.ForgeMobSpawnSettings(p_186624_, this);
 +        this.f_47442_ = p_186621_;
 +        this.f_47443_ = p_186622_;
 +        this.serializedGenerationSettings = p_186623_;

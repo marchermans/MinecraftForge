@@ -1,13 +1,13 @@
 --- a/net/minecraft/world/level/biome/MobSpawnSettings.java
 +++ b/net/minecraft/world/level/biome/MobSpawnSettings.java
-@@ -39,20 +_,32 @@
+@@ -39,24 +_,52 @@
     private final float f_48328_;
     private final Map<MobCategory, WeightedRandomList<MobSpawnSettings.SpawnerData>> f_48329_;
     private final Map<EntityType<?>, MobSpawnSettings.MobSpawnCost> f_48330_;
 +   private final java.util.Set<MobCategory> typesView;
 +   private final java.util.Set<EntityType<?>> costView;
  
-    MobSpawnSettings(float p_196689_, Map<MobCategory, WeightedRandomList<MobSpawnSettings.SpawnerData>> p_196690_, Map<EntityType<?>, MobSpawnSettings.MobSpawnCost> p_196691_) {
+    protected MobSpawnSettings(float p_196689_, Map<MobCategory, WeightedRandomList<MobSpawnSettings.SpawnerData>> p_196690_, Map<EntityType<?>, MobSpawnSettings.MobSpawnCost> p_196691_) {
        this.f_48328_ = p_196689_;
        this.f_48329_ = ImmutableMap.copyOf(p_196690_);
        this.f_48330_ = ImmutableMap.copyOf(p_196691_);
@@ -16,20 +16,42 @@
     }
  
     public WeightedRandomList<MobSpawnSettings.SpawnerData> m_151798_(MobCategory p_151799_) {
-       return this.f_48329_.getOrDefault(p_151799_, f_151796_);
-    }
- 
-+   public java.util.Set<MobCategory> getSpawnerTypes() {
-+       return this.typesView;
+-      return this.f_48329_.getOrDefault(p_151799_, f_151796_);
++      return this.getActiveSpawners().getOrDefault(p_151799_, f_151796_);
 +   }
 +
++   public java.util.Set<MobCategory> getSpawnerTypes() {
++       return this.getActiveTypesView();
+    }
+ 
     @Nullable
     public MobSpawnSettings.MobSpawnCost m_48345_(EntityType<?> p_48346_) {
-       return this.f_48330_.get(p_48346_);
+-      return this.f_48330_.get(p_48346_);
++      return this.getActiveMobSpawnCosts().get(p_48346_);
 +   }
 +
 +   public java.util.Set<EntityType<?>> getEntityTypes() {
-+       return this.costView;
++       return this.getActiveCostView();
     }
  
     public float m_48344_() {
+       return this.f_48328_;
++   }
++
++   public Map<MobCategory, WeightedRandomList<SpawnerData>> getActiveSpawners() {
++      return f_48329_;
++   }
++
++   public Map<EntityType<?>, MobSpawnCost> getActiveMobSpawnCosts() {
++      return f_48330_;
++   }
++
++   public java.util.Set<MobCategory> getActiveTypesView() {
++      return typesView;
++   }
++
++   public java.util.Set<EntityType<?>> getActiveCostView() {
++      return costView;
+    }
+ 
+    public static class Builder {

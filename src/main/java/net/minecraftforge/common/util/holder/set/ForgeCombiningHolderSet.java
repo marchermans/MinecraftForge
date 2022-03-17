@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ForgeCombiningHolderSet<T> extends HolderSet.ListBacked<T> {
 
@@ -39,16 +41,10 @@ public class ForgeCombiningHolderSet<T> extends HolderSet.ListBacked<T> {
     @Override
     public @NotNull Either<TagKey<T>, List<Holder<T>>> unwrap() {
         return Either.right(
-                others.stream()
-                        .map(HolderSet::unwrap)
-                        .flatMap(unwrapped -> unwrapped
-                                .right()
-                                .orElseThrow(() ->
-                                        new IllegalStateException("Can not unwrap a holder which is tag based: " +
-                                                unwrapped.left().map(TagKey::toString).orElse("UNKNOWN TAG")))
-                                .stream()
-                        )
-                        .toList());
+        others.stream()
+                .flatMap(HolderSet::stream)
+                .collect(Collectors.toList())
+        );
     }
 
     @Override

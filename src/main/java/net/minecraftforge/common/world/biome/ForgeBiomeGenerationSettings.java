@@ -1,4 +1,4 @@
-package net.minecraftforge.common.world;
+package net.minecraftforge.common.world.biome;
 
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.Holder;
@@ -13,6 +13,7 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraftforge.common.util.holder.set.ForgeCombiningHolderSet;
 import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.common.world.biome.ForgeBiomeAdaptationManager;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -22,15 +23,13 @@ public class ForgeBiomeGenerationSettings extends BiomeGenerationSettings {
 
     private Biome biome;
 
-    private final Lazy.Resettable<Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>>> carversProxy = Lazy.resettableOf(
+    private final Lazy<Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>>> carversProxy = Lazy.concurrentOf(
             () -> ForgeBiomeAdaptationManager.INSTANCE.getCarvers().apply(biome.getHolder(), super.getActiveCarvers())
     );
-    private final Lazy.Resettable<List<HolderSet<PlacedFeature>>> featuresProxy = Lazy.resettableOf(
-            () -> {
-                return ForgeBiomeAdaptationManager.INSTANCE.getFeatures().apply(biome.getHolder(), super.getActiveFeatures());
-            }
+    private final Lazy<List<HolderSet<PlacedFeature>>> featuresProxy = Lazy.concurrentOf(
+            () -> ForgeBiomeAdaptationManager.INSTANCE.getFeatures().apply(biome.getHolder(), super.getActiveFeatures())
     );
-    private final Lazy.Resettable<List<ConfiguredFeature<?, ?>>> flowerFeaturesProxy = Lazy.resettableOf(
+    private final Lazy<List<ConfiguredFeature<?, ?>>> flowerFeaturesProxy = Lazy.concurrentOf(
             () -> featuresProxy.get().stream()
                     .flatMap(HolderSet::stream)
                     .map(Holder::value)
@@ -38,13 +37,13 @@ public class ForgeBiomeGenerationSettings extends BiomeGenerationSettings {
                     .filter((configuredFeature) -> configuredFeature.feature() == Feature.FLOWER)
                     .collect(ImmutableList.toImmutableList())
     );
-    private final Lazy.Resettable<Set<PlacedFeature>> featureSetProxy = Lazy.resettableOf(
+    private final Lazy<Set<PlacedFeature>> featureSetProxy = Lazy.concurrentOf(
             () -> featuresProxy.get().stream()
                     .flatMap(HolderSet::stream)
                     .map(Holder::value)
                     .collect(Collectors.toSet())
     );
-    private final Lazy.Resettable<Set<GenerationStep.Carving>> carversViewProxy = Lazy.resettableOf(
+    private final Lazy<Set<GenerationStep.Carving>> carversViewProxy = Lazy.concurrentOf(
             () -> java.util.Collections.unmodifiableSet(carversProxy.get().keySet())
     );
 
@@ -57,27 +56,27 @@ public class ForgeBiomeGenerationSettings extends BiomeGenerationSettings {
     }
 
     @Override
-    public Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> getActiveCarvers() {
+    public @NotNull Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> getActiveCarvers() {
         return carversProxy.get();
     }
 
     @Override
-    public List<HolderSet<PlacedFeature>> getActiveFeatures() {
+    public @NotNull List<HolderSet<PlacedFeature>> getActiveFeatures() {
         return featuresProxy.get();
     }
 
     @Override
-    public Supplier<List<ConfiguredFeature<?, ?>>> getActiveFlowerFeatures() {
+    public @NotNull Supplier<List<ConfiguredFeature<?, ?>>> getActiveFlowerFeatures() {
         return flowerFeaturesProxy;
     }
 
     @Override
-    public Supplier<Set<PlacedFeature>> getActiveFeatureSet() {
+    public @NotNull Supplier<Set<PlacedFeature>> getActiveFeatureSet() {
         return featureSetProxy;
     }
 
     @Override
-    public Set<GenerationStep.Carving> getActiveCarversView() {
+    public @NotNull Set<GenerationStep.Carving> getActiveCarversView() {
         return carversViewProxy.get();
     }
 }
