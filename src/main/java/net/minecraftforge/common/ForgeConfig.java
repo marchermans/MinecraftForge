@@ -7,14 +7,20 @@ package net.minecraftforge.common;
 
 import static net.minecraftforge.fml.Logging.FORGEMOD;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.client.gui.config.widgets.ConfigGuiWidget;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraftforge.server.permission.events.PermissionGatherEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.DoubleValue;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
+
+import java.util.stream.Collectors;
 
 
 public class ForgeConfig {
@@ -34,6 +40,7 @@ public class ForgeConfig {
 
         Server(ForgeConfigSpec.Builder builder) {
             builder.comment("Server configuration settings")
+                   .translation("forge.configgui.server")
                    .push("server");
 
             removeErroringBlockEntities = builder
@@ -73,7 +80,30 @@ public class ForgeConfig {
             permissionHandler = builder
                     .comment("The permission handler used by the server. Defaults to forge:default_handler if no such handler with that name is registered.")
                     .translation("forge.configgui.permissionHandler")
-                    .define("permissionHandler", "forge:default_handler");
+                    .worldRestart()
+                    .useConfigGuiWidgetFactory(() -> ConfigGuiWidget.TextWidget.FACTORY)
+                    .withErrorDescriber((value) -> {
+                        if (value instanceof String name) {
+                            PermissionGatherEvent.Handler handlerEvent = new PermissionGatherEvent.Handler();
+                            MinecraftForge.EVENT_BUS.post(handlerEvent);
+                            if (!handlerEvent.getAvailablePermissionHandlerFactories().containsKey(new ResourceLocation(name))) {
+                                return Component.translatable("forge.configgui.error.permissionHandler.unknownName", name, handlerEvent.getAvailablePermissionHandlerFactories().keySet().stream().map(Object::toString).collect(Collectors.joining("\n - ", "\n - ", "")));
+                            };
+
+                            throw new IllegalStateException("Passed in valid name for error describer");
+                        }
+
+                        return Component.translatable("forge.configgui.error.permissionHandler.notText");
+                    })
+                    .define("permissionHandler", "forge:default_handler", obj -> {
+                        if (obj instanceof String name) {
+                            PermissionGatherEvent.Handler handlerEvent = new PermissionGatherEvent.Handler();
+                            MinecraftForge.EVENT_BUS.post(handlerEvent);
+                            return handlerEvent.getAvailablePermissionHandlerFactories().containsKey(new ResourceLocation(name));
+                        }
+
+                        return true;
+                    });
 
             builder.pop();
         }
@@ -89,6 +119,7 @@ public class ForgeConfig {
 
         Common(ForgeConfigSpec.Builder builder) {
             builder.comment("General configuration settings")
+                    .translation("forge.configgui.common")
                     .push("general");
 
             cachePackAccess = builder
@@ -129,8 +160,10 @@ public class ForgeConfig {
         public final BooleanValue compressLanIPv6Addresses;
 
         Client(ForgeConfigSpec.Builder builder) {
-            builder.comment("Client only settings, mostly things related to rendering")
-                   .push("client");
+            builder
+                 .comment("Client only settings, mostly things related to rendering")
+                 .translation("forge.configgui.client")
+                 .push("client");
 
             alwaysSetupTerrainOffThread = builder
                 .comment("Enable Forge to queue all chunk updates to the Chunk Update thread.",

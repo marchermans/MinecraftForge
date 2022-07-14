@@ -146,6 +146,7 @@ import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.StartupMessageManager;
 import net.minecraftforge.fml.VersionChecker;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.ConfigSync;
 import net.minecraftforge.network.NetworkConstants;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -908,6 +909,7 @@ public class ForgeHooksClient
 
     public static void handleClientLevelClosing(ClientLevel level)
     {
+        ConfigSync.INSTANCE.unloadSyncedConfig();
         Connection client = getClientConnection();
         // ONLY revert a non-local connection
         if (client != null && !client.isMemoryConnection())

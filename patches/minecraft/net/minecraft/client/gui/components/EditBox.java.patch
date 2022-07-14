@@ -1,0 +1,32 @@
+--- a/net/minecraft/client/gui/components/EditBox.java
++++ b/net/minecraft/client/gui/components/EditBox.java
+@@ -379,9 +_,9 @@
+    public void m_6303_(PoseStack p_94160_, int p_94161_, int p_94162_, float p_94163_) {
+       if (this.m_94213_()) {
+          if (this.m_94219_()) {
+-            int i = this.m_93696_() ? -1 : -6250336;
++            int i = this.m_93696_() ? getBorderColorFocused() : getBorderColor();
+             m_93172_(p_94160_, this.f_93620_ - 1, this.f_93621_ - 1, this.f_93620_ + this.f_93618_ + 1, this.f_93621_ + this.f_93619_ + 1, i);
+-            m_93172_(p_94160_, this.f_93620_, this.f_93621_, this.f_93620_ + this.f_93618_, this.f_93621_ + this.f_93619_, -16777216);
++            m_93172_(p_94160_, this.f_93620_, this.f_93621_, this.f_93620_ + this.f_93618_, this.f_93621_ + this.f_93619_, getBackgroundColor());
+          }
+ 
+          int i2 = this.f_94098_ ? this.f_94103_ : this.f_94104_;
+@@ -586,5 +_,17 @@
+ 
+    public void m_142291_(NarrationElementOutput p_169009_) {
+       p_169009_.m_169146_(NarratedElementType.TITLE, Component.m_237110_("narration.edit_box", this.m_94155_()));
++   }
++
++   public int getBorderColor() {
++      return f_169006_;
++   }
++
++   public int getBorderColorFocused() {
++      return f_169005_;
++   }
++
++   public int getBackgroundColor() {
++      return f_169007_;
+    }
+ }

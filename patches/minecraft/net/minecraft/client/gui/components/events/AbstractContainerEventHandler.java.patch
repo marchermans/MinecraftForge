@@ -1,0 +1,17 @@
+--- a/net/minecraft/client/gui/components/events/AbstractContainerEventHandler.java
++++ b/net/minecraft/client/gui/components/events/AbstractContainerEventHandler.java
+@@ -25,6 +_,14 @@
+    }
+ 
+    public void m_7522_(@Nullable GuiEventListener p_94677_) {
++      if (this.f_94673_ != null && this.f_94673_ != p_94677_) {  // Forge: Ensure that we first unselect the current, else Editboxes in a list get stuck in focus mode. MC-254202
++         if (this.f_94673_ instanceof ContainerEventHandler containerEventHandler) {
++            containerEventHandler.m_7522_(null);
++            return;
++         }
++
++         this.f_94673_.m_5755_(false);
++      }
+       this.f_94673_ = p_94677_;
+    }
+ }

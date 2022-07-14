@@ -5,6 +5,51 @@
 
 package net.minecraftforge.client.gui;
 
+import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraftforge.client.ConfigScreenHandler;
+import net.minecraftforge.client.gui.config.widgets.ConfigGuiScreen;
+import net.minecraftforge.client.gui.config.widgets.SpecificationData;
+import net.minecraftforge.client.gui.widget.ModListWidget;
+import net.minecraftforge.client.gui.widget.ScrollPanel;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.ForgeI18n;
+import net.minecraftforge.common.util.MavenVersionStringHelper;
+import net.minecraftforge.common.util.Size2i;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.VersionChecker;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.fml.loading.StringUtils;
+import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
+import net.minecraftforge.forgespi.language.IModInfo;
+import net.minecraftforge.resource.PathPackResources;
+import net.minecraftforge.resource.ResourcePackLoader;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -15,50 +60,6 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraftforge.client.ConfigScreenHandler;
-import net.minecraftforge.client.gui.widget.ModListWidget;
-import net.minecraftforge.client.gui.widget.ScrollPanel;
-import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
-import net.minecraftforge.resource.PathPackResources;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.maven.artifact.versioning.ComparableVersion;
-
-import com.mojang.blaze3d.systems.RenderSystem;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ObjectSelectionList;
-import com.mojang.blaze3d.vertex.Tesselator;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import com.mojang.blaze3d.platform.NativeImage;
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.Util;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.util.Size2i;
-import net.minecraftforge.common.ForgeI18n;
-import net.minecraftforge.common.util.MavenVersionStringHelper;
-import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.VersionChecker;
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.fml.loading.StringUtils;
-import net.minecraftforge.resource.ResourcePackLoader;
-import net.minecraftforge.forgespi.language.IModInfo;
-
-import net.minecraft.locale.Language;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 
 public class ModListScreen extends Screen
 {
@@ -284,7 +285,7 @@ public class ModListScreen extends Screen
 
         search.setFocus(false);
         search.setCanLoseFocus(true);
-        configButton.active = false;
+        configButton.active = true;
 
         final int width = listWidth / numButtons;
         int x = PADDING;
@@ -302,12 +303,30 @@ public class ModListScreen extends Screen
         if (selected == null) return;
         try
         {
-            ConfigScreenHandler.getScreenFactoryFor(selected.getInfo()).map(f->f.apply(this.minecraft, this)).ifPresent(newScreen -> this.minecraft.setScreen(newScreen));
+            ConfigScreenHandler.getScreenFactoryFor(selected.getInfo()).map(f -> f.apply(this.minecraft, this)).ifPresentOrElse(
+                    newScreen -> this.minecraft.setScreen(newScreen),
+                    () -> openDefaultForgeConfigGuiScreen());
         }
         catch (final Exception e)
         {
             LOGGER.error("There was a critical issue trying to build the config GUI for {}", selected.getInfo().getModId(), e);
         }
+    }
+
+    private void openDefaultForgeConfigGuiScreen()
+    {
+        ModList.get().getModContainerById(selected.getInfo().getModId())
+               .ifPresent(container ->
+                this.minecraft.setScreen(new ConfigGuiScreen(
+                        this.minecraft.level != null ?
+                                Component.translatable("forge.configgui.title.runtimeConfigs", selected.getInfo().getDisplayName()) :
+                                Component.translatable("forge.configgui.title.defaultConfigs", selected.getInfo().getDisplayName()),
+                        container.getConfigs().entries().stream()
+                                .filter(entry -> entry.getValue().getSpec() instanceof ForgeConfigSpec)
+                                .filter(entry -> ((ForgeConfigSpec) entry.getValue().getSpec()).isVisibleOnModConfigScreen())
+                                .map(entry -> new SpecificationData((ForgeConfigSpec) entry.getValue().getSpec(), !Minecraft.getInstance().isLocalServer() && entry.getKey() == ModConfig.Type.SERVER))
+                                .collect(Collectors.toList()),
+                        () -> this.minecraft.setScreen(this))));
     }
 
     @Override
@@ -398,7 +417,7 @@ public class ModListScreen extends Screen
             return;
         }
         IModInfo selectedMod = selected.getInfo();
-        this.configButton.active = ConfigScreenHandler.getScreenFactoryFor(selectedMod).isPresent();
+        this.configButton.active = hasConfigurationOptionsWithScreen(selectedMod); //ConfigScreenHandler.getScreenFactoryFor(selectedMod).isPresent();
         List<String> lines = new ArrayList<>();
         VersionChecker.CheckResult vercheck = VersionChecker.getResult(selectedMod);
 
@@ -479,6 +498,16 @@ public class ModListScreen extends Screen
         }
 
         modInfo.setInfo(lines, logoData.getLeft(), logoData.getRight());
+    }
+
+    private boolean hasConfigurationOptionsWithScreen(final IModInfo selectedMod)
+    {
+        return ModList.get().getModContainerById(selectedMod.getModId())
+                      .flatMap(container -> container.getConfigs().entries().stream()
+                                                     .filter(entry -> entry.getValue().getSpec() instanceof ForgeConfigSpec)
+                                                     .filter(entry -> ((ForgeConfigSpec) entry.getValue().getSpec()).isVisibleOnModConfigScreen())
+                                                     .findAny())
+                      .isPresent();
     }
 
     @Override

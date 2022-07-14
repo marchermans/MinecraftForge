@@ -1,16 +1,24 @@
 --- a/net/minecraft/client/gui/components/AbstractSelectionList.java
 +++ b/net/minecraft/client/gui/components/AbstractSelectionList.java
-@@ -536,6 +_,13 @@
+@@ -333,6 +_,7 @@
+       } else {
+          E e = this.m_93412_(p_93420_, p_93421_);
+          if (e != null) {
++            this.m_7522_(null); // Forge: Ensure that we first unselect the current, else Editboxes in a list get stuck in focus mode. MC-254202
+             if (e.m_6375_(p_93420_, p_93421_, p_93422_)) {
+                this.m_7522_(e);
+                this.m_7897_(true);
+@@ -535,6 +_,13 @@
+       }
  
     }
- 
++
 +   public int getWidth() { return this.f_93388_; }
 +   public int getHeight() { return this.f_93389_; }
 +   public int getTop() { return this.f_93390_; }
 +   public int getBottom() { return this.f_93391_; }
 +   public int getLeft() { return this.f_93393_; }
 +   public int getRight() { return this.f_93392_; }
-+
+ 
     @OnlyIn(Dist.CLIENT)
     public abstract static class Entry<E extends AbstractSelectionList.Entry<E>> implements GuiEventListener {
-       /** @deprecated */
