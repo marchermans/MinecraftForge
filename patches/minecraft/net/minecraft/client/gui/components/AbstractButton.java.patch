@@ -1,11 +1,31 @@
 --- a/net/minecraft/client/gui/components/AbstractButton.java
 +++ b/net/minecraft/client/gui/components/AbstractButton.java
-@@ -32,7 +_,7 @@
+@@ -26,14 +_,11 @@
+    public abstract void m_5691_();
+ 
+    protected void m_87963_(GuiGraphics p_281670_, int p_282682_, int p_281714_, float p_282542_) {
+-      Minecraft minecraft = Minecraft.m_91087_();
+       p_281670_.m_280246_(1.0F, 1.0F, 1.0F, this.f_93625_);
+       RenderSystem.enableBlend();
        RenderSystem.enableDepthTest();
        p_281670_.m_280027_(f_93617_, this.m_252754_(), this.m_252907_(), this.m_5711_(), this.m_93694_(), 20, 4, 200, 20, 0, this.m_274533_());
-       p_281670_.m_280246_(1.0F, 1.0F, 1.0F, 1.0F);
+-      p_281670_.m_280246_(1.0F, 1.0F, 1.0F, 1.0F);
 -      int i = this.f_93623_ ? 16777215 : 10526880;
-+      int i = getFGColor();
-       this.m_280139_(p_281670_, minecraft.f_91062_, i | Mth.m_14167_(this.f_93625_ * 255.0F) << 24);
+-      this.m_280139_(p_281670_, minecraft.f_91062_, i | Mth.m_14167_(this.f_93625_ * 255.0F) << 24);
++      renderButtonForeground(p_281670_, p_282682_, p_281714_, p_282542_);
     }
  
+    public void m_280139_(GuiGraphics p_283366_, Font p_283054_, int p_281656_) {
+@@ -67,5 +_,12 @@
+       } else {
+          return false;
+       }
++   }
++
++   protected void renderButtonForeground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
++      Minecraft minecraft = Minecraft.m_91087_();
++      guiGraphics.m_280246_(1.0F, 1.0F, 1.0F, 1.0F);
++      int i = getFGColor();
++      this.m_280139_(guiGraphics, minecraft.f_91062_, i | Mth.m_14167_(this.f_93625_ * 255.0F) << 24);
+    }
+ }

@@ -1,0 +1,19 @@
+--- a/net/minecraft/client/gui/components/Checkbox.java
++++ b/net/minecraft/client/gui/components/Checkbox.java
+@@ -55,11 +_,15 @@
+       Font font = minecraft.f_91062_;
+       p_283124_.m_280246_(1.0F, 1.0F, 1.0F, this.f_93625_);
+       RenderSystem.enableBlend();
+-      p_283124_.m_280163_(f_93821_, this.m_252754_(), this.m_252907_(), this.m_93696_() ? 20.0F : 0.0F, this.f_93822_ ? 20.0F : 0.0F, 20, this.f_93619_, 64, 64);
++      p_283124_.m_280163_(getTexture(), this.m_252754_(), this.m_252907_(), this.m_93696_() ? 20.0F : 0.0F, this.f_93822_ ? 20.0F : 0.0F, 20, this.f_93619_, 64, 64);
+       p_283124_.m_280246_(1.0F, 1.0F, 1.0F, 1.0F);
+       if (this.f_93823_) {
+          p_283124_.m_280430_(font, this.m_6035_(), this.m_252754_() + 24, this.m_252907_() + (this.f_93619_ - 8) / 2, 14737632 | Mth.m_14167_(this.f_93625_ * 255.0F) << 24);
+       }
+ 
++   }
++
++   protected ResourceLocation getTexture() {
++       return f_93821_;
+    }
+ }

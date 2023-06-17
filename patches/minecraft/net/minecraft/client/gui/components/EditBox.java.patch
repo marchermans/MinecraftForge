@@ -1,0 +1,30 @@
+--- a/net/minecraft/client/gui/components/EditBox.java
++++ b/net/minecraft/client/gui/components/EditBox.java
+@@ -361,9 +_,9 @@
+    public void m_87963_(GuiGraphics p_283252_, int p_281594_, int p_282100_, float p_283101_) {
+       if (this.m_94213_()) {
+          if (this.m_94219_()) {
+-            int i = this.m_93696_() ? -1 : -6250336;
++            int i = this.m_93696_() ? getBorderColorFocused() : getBorderColor();
+             p_283252_.m_280509_(this.m_252754_() - 1, this.m_252907_() - 1, this.m_252754_() + this.f_93618_ + 1, this.m_252907_() + this.f_93619_ + 1, i);
+-            p_283252_.m_280509_(this.m_252754_(), this.m_252907_(), this.m_252754_() + this.f_93618_, this.m_252907_() + this.f_93619_, -16777216);
++            p_283252_.m_280509_(this.m_252754_(), this.m_252907_(), this.m_252754_() + this.f_93618_, this.m_252907_() + this.f_93619_, getBackgroundColor());
+          }
+ 
+          int i2 = this.f_94098_ ? this.f_94103_ : this.f_94104_;
+@@ -561,5 +_,15 @@
+ 
+    public void m_257771_(Component p_259584_) {
+       this.f_256828_ = p_259584_;
++   }
++
++   public int getBorderColor() {
++      return f_169006_;
++   }
++   public int getBorderColorFocused() {
++      return f_169005_;
++   }
++   public int getBackgroundColor() {
++      return f_169007_;
+    }
+ }
