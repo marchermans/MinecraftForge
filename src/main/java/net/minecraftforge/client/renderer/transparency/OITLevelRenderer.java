@@ -9,6 +9,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -253,7 +254,7 @@ public final class OITLevelRenderer
      * @param renderType The render type to check.
      * @return True when the handler will queue the render type's render call for OIT handler, false when rendering is immediately queued on the GPU.
      */
-    public boolean willHandle(RenderType renderType) {
+    public boolean willHandle(RenderType renderType, final VertexFormat.Mode mode) {
         if (!ForgeConfig.CLIENT.orderIndependentTransparentRendering.get())
             return false;
 
@@ -271,7 +272,7 @@ public final class OITLevelRenderer
             return false;
 
         //We need an adapted shader, which is indicated by the presence of the OIT_ENABLE uniform.
-        return compositeRenderType.state().shaderState.shader.filter(shaderInstanceSupplier -> shaderInstanceSupplier.get().OIT_ENABLE != null).isPresent();
+        return compositeRenderType.state().shaderState.shader.filter(shaderInstanceSupplier -> OITShaderManager.getInstance().hasShader(shaderInstanceSupplier.get(), mode)).isPresent();
     }
 
     /**
@@ -282,14 +283,14 @@ public final class OITLevelRenderer
      * @param renderType The render type to check.
      * @return True when the handler will queue the render type's render call for OIT handler, false when rendering is immediately queued on the GPU.
      */
-    public boolean willHandle(ParticleRenderType renderType) {
+    public boolean willHandle(ParticleRenderType renderType, final VertexFormat.Mode mode) {
         if (!ForgeConfig.CLIENT.orderIndependentTransparentRendering.get())
             return false;
 
         //We can only handle the types for which OIT is explicitly enabled.
         //Additionally check for the particle shader to be adapted.
         return this.transparentOITRenderTarget != null && renderType.requiresTransparencySorting() &&
-                GameRenderer.getParticleShader() != null && GameRenderer.getParticleShader().OIT_ENABLE != null;
+                GameRenderer.getParticleShader() != null && OITShaderManager.getInstance().hasShader(GameRenderer.getParticleShader(), mode);
     }
 
     /**
@@ -369,22 +370,13 @@ public final class OITLevelRenderer
      * @param shouldUpload Whether the uniform values should be uploaded.
      */
     private void setupTransparentRendering(ShaderInstance shaderInstance, boolean shouldUpload) {
-        if (shaderInstance.OIT_ENABLE != null) {
-            shaderInstance.OIT_ENABLE.set(1);
-            if (shouldUpload) {
-                shaderInstance.OIT_ENABLE.upload();
-            }
-        }
-        else {
-            return;
-        }
-
         transparentOITRenderTarget.bindWrite(true);
 
         RenderSystem.enableDepthTest();
         glDepthMask(false);
         glEnable(GL_BLEND);
         glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+
     }
 
     /**

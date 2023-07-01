@@ -17,10 +17,10 @@ import java.util.List;
 
 public class OITGlslPreprocessor implements IForgeGlslPreprocessor
 {
-    @Nullable
-    private final ShaderInstance instance;
 
-    public OITGlslPreprocessor(@Nullable ShaderInstance shaderInstance)
+    private final OITShader instance;
+
+    public OITGlslPreprocessor(OITShader shaderInstance)
     {
         instance = shaderInstance;
     }
@@ -41,7 +41,6 @@ public class OITGlslPreprocessor implements IForgeGlslPreprocessor
         }
 
         updateVersion(lines);
-        injectTransparentRenderUniform(lines, instance);
         renameMainMethod(lines);
         injectShaderPrefix(lines);
         injectShaderSuffix(lines);
@@ -70,28 +69,6 @@ public class OITGlslPreprocessor implements IForgeGlslPreprocessor
             String versionPart = versionParts[i];
             lines.add(versionLine + i, versionPart);
         }
-    }
-
-    private static void injectTransparentRenderUniform(List<String> lines, ShaderInstance instance)
-    {
-        injectUniform(lines, ForgeHooksClient.UNIFORM_OIT_TYPE, ForgeHooksClient.UNIFORM_OIT_NAME);
-
-        final Uniform uniform = new Uniform(ForgeHooksClient.UNIFORM_OIT_NAME, 0, 1, instance); //BOOL -> ONCE
-        instance.registerCustomUniform(uniform);
-    }
-
-    private static void injectUniform(final List<String> lines, final String type, final String name) {
-        int injectionIndex = findLastLineIndexStartingWith(lines, "uniform");
-        if (injectionIndex == -1) {
-            injectionIndex = findLastLineIndexStartingWith(lines, "#extension");
-            if (injectionIndex == -1) {
-                injectionIndex = findLastLineIndexStartingWith(lines, "#version");
-                if (injectionIndex == -1) {
-                    throw new IllegalStateException("Failed to find #version, or #extension or existing uniform lines in shader");
-                }
-            }
-        }
-        lines.add(injectionIndex + 1, "uniform " + type + " " + name + ";");
     }
 
     private static int findLastLineIndexStartingWith(final List<String> lines, final String prefix) {

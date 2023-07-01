@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.event.CloseShadersEvent;
 import net.minecraftforge.client.event.RegisterGlslPreprocessorsEvent;
 import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.client.event.RenderTargetEvent;
@@ -35,14 +36,20 @@ public class OITEventHandler
 
         @SubscribeEvent
         public static void onShaderProgramCompile(RegisterGlslPreprocessorsEvent event) {
-            if (event.getShaderInstance() != null) {
-                event.newProcessor(new OITGlslPreprocessor(event.getShaderInstance()));
+            if (event.getShaderInstance() != null && event.getShaderInstance() instanceof OITShader oitShader) {
+                event.newProcessor(new OITGlslPreprocessor(oitShader));
             }
         }
 
         @SubscribeEvent
         public static void onRenderTargetSetup(RenderTargetEvent.Create event) {
             OITLevelRenderer.getInstance().initialize(event.getWidth(), event.getHeight(), event.isOnOSX());
+        }
+
+        @SubscribeEvent
+        public static void closeShaders(CloseShadersEvent event)
+        {
+            OITShaderManager.getInstance().reset();
         }
     }
 

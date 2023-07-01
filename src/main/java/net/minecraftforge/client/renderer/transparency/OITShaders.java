@@ -13,6 +13,31 @@ public final class OITShaders
         throw new IllegalStateException("Can not instantiate an instance of: ForgeTransparencyShaders. This is a utility class");
     }
 
+    public static final String GEOMETRY_SHADER = """
+            #version 150 core
+            
+            uniform int oitBucketCount;
+            
+            layout(%FORMAT%) in;
+            layout(%FORMAT%) out;
+
+            out int gl_Layer;
+            
+            void main() {
+               for(int i = 0; i < oitBucketCount; i++) {
+                   gl_Layer = i;
+                   
+                   for(int j = 0; j < 3; j++) {
+                       gl_Position = gl_in[j].gl_Position;
+                       EmitVertex();
+                   }
+                   
+                   EndPrimitive();
+               }
+            }
+            """;
+
+
     public static final String FRAGMENT_SHADER_VERSION_HEADER = """
             #version 150 core
             #extension GL_ARB_explicit_attrib_location : require
@@ -32,14 +57,8 @@ public final class OITShaders
             
             void main() {
                 mainShader();
-            
-                if (!oitEnabled) {
-                    accum = %OUT_COLOR%;
-                    return;
-                }
-            
+
                 vec4 color = %OUT_COLOR%;
-                            
                 float weight = weight(%Z_VALUE%, color.a);
                                                 
                 accum = vec4(color.rgb * weight, color.a);
